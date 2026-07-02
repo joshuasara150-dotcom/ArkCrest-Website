@@ -211,11 +211,11 @@
 </div>
 
 {{-- Preview Modal --}}
-<div id="frmPreviewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:flex-start;justify-content:center;overflow-y:auto;padding:32px 16px;">
-  <div style="background:white;border-radius:16px;width:100%;max-width:820px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;">
-    {{-- Modal Header --}}
-    <div style="background:linear-gradient(135deg,#1e4575,#2563eb);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;">
-      <div style="color:white;font-weight:700;font-size:16px;">Budget Request Form   Preview</div>
+<div id="frmPreviewModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100vw;height:100vh;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:999999;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:white;border-radius:16px;width:100%;max-width:900px;max-height:90vh;box-shadow:0 20px 60px rgba(0,0,0,.4);overflow:hidden;display:flex;flex-direction:column;">
+    {{-- Modal Header (stays fixed while body scrolls) --}}
+    <div style="flex-shrink:0;background:linear-gradient(135deg,#1e4575,#2563eb);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="color:white;font-weight:700;font-size:16px;">Budget Request Form — Preview</div>
       <div style="display:flex;gap:10px;align-items:center;">
         <button onclick="incrementAndPrint()" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
@@ -224,182 +224,24 @@
         <button onclick="closePreview()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;">&times;</button>
       </div>
     </div>
-    {{-- Modal Body: cloned form --}}
-    <div class="frm-preview-scroll" style="padding:20px;display:flex;justify-content:center;overflow-x:auto;-webkit-overflow-scrolling:touch;"><div id="frmPreviewBody" style="background:white;box-shadow:0 4px 24px rgba(0,0,0,.3);width:816px;flex-shrink:0;"></div></div>
-  </div>{{-- #frmCardWrap --}}
-  </div>{{-- #tab-budget --}}
-
-  {{-- ============================= --}}
-  {{-- Site Visit Form Tab           --}}
-  {{-- ============================= --}}
-  <div id="tab-sitevisit" style="display:none">
-  <div class="frm-scale-wrap" id="frmCardSVWrap">
-  <div class="frm-card" id="frmCardSV">
-
-    <!-- Header -->
-    <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:6px;">
-      <div style="display:flex;align-items:center;gap:14px;justify-content:center;">
-        <img src="{{ asset('images/ArkCrest_Logo.png') }}" alt="Logo" style="width:80px;height:80px;object-fit:contain;flex-shrink:0;">
-        <div style="text-align:center;">
-          <div style="font-size:24px;font-weight:700;text-decoration:underline;color:#000;text-transform:uppercase;letter-spacing:.5px;">ARKCREST REALTY CORPORATION</div>
-          <div style="font-size:24px;font-weight:700;color:#2563eb;margin-top:10px;letter-spacing:.5px;">SITE VISIT FORM</div>
-        </div>
-      </div>
-    </div>
-    <div style="text-align:right;font-size:16px;font-weight:700;margin-bottom:4px;margin-top:10px;letter-spacing:.3px;">
-      Status: <span id="svStatusDisplay" style="color:#dc2626;">Not Yet Submitted</span>
-    </div>
-
-    <table class="info-tbl">
-      <tr>
-        <td class="lbl">Agent ID:</td>
-        <td><input type="text" id="sv_agent_id" value="{{ auth()->user()->employee_id ?? '' }}" readonly placeholder="—" oninput="fetchAgentName()"></td>
-        <td class="lbl">Agent Name:</td>
-        <td><input type="text" id="sv_agent_name" value="{{ auth()->user()->name ?? '' }}" readonly placeholder="Auto-filled from Agent ID"></td>
-      </tr>
-      <tr>
-        <td class="lbl">Team:</td>
-        <td>
-          @if(auth()->user()->team_name)
-            <input type="text" value="{{ auth()->user()->team_name }}" readonly>
-            <input type="hidden" id="sv_team_hidden" value="{{ auth()->user()->team_name }}">
-          @else
-            <select id="sv_team_select">
-              <option value="">— Select Team (optional) —</option>
-              <option value="">— Corporate —</option>
-              <option value="">— Executives —</option>
-              <option value="">— TEAM CARL —</option>
-              <option value="">— TEAM CYNTHIA —</option>
-              <option value="">— TEAM EVELYN —</option>
-              @foreach($teams as $team)
-                <option value="{{ $team }}">{{ $team }}</option>
-              @endforeach
-            </select>
-          @endif
-        </td>
-        <td class="lbl">Mode of Visit:</td>
-        <td>
-          <input type="text" id="sv_mode" list="svVisitTypeOptions" required placeholder="Select or type...">
-          <datalist id="svVisitTypeOptions">
-            <option value="Actual (On-site)">
-            <option value="Online (Virtual)">
-          </datalist>
-        </td>
-      </tr>
-      <tr>
-        <td class="lbl">Visit Date:</td>
-        <td><input type="date" id="sv_date" required min="{{ date('Y-m-d') }}"></td>
-        <td class="lbl">Visit Time:</td>
-        <td><input type="time" id="sv_time" required></td>
-      </tr>
-      <tr>
-        <td class="lbl">Client Name:</td>
-        <td><input type="text" id="sv_client_name" required autocomplete="off" placeholder="Client full name" onblur="checkDuplicateSV()"></td>
-        <td class="lbl">Client Email:</td>
-        <td><input type="email" id="sv_client_email" placeholder="email@example.com (optional)"></td>
-      </tr>
-      <tr>
-        <td class="lbl">Client Phone:</td>
-        <td>
-          <div style="display:flex;gap:4px;align-items:center;">
-            <input type="text" id="sv_client_phone_code" value="+63" style="width:40px;flex:none;text-align:center;">
-            <input type="text" id="sv_client_phone" placeholder="9XX XXX XXXX (optional)" maxlength="15" inputmode="numeric" style="flex:1;">
-          </div>
-        </td>
-        <td class="lbl">Client Address:</td>
-        <td><input type="text" id="sv_client_address" placeholder="Home or office address (optional)"></td>
-      </tr>
-      <tr>
-        <td class="lbl">Property Name:</td>
-        <td style="position:relative;">
-          @if($properties->isNotEmpty())
-          <select id="sv_property" required onchange="onPropertySelectSV(this)">
-            <option value="">— Select Property —</option>
-            @foreach($properties as $prop)
-            <option value="{{ $prop->name }}" data-developer="{{ $prop->developer }}">{{ $prop->name }}{{ $prop->developer ? ' ('.$prop->developer.')' : '' }}</option>
-            @endforeach
-          </select>
-          @else
-          <input type="text" id="sv_property" required placeholder="Type property name..." autocomplete="off" oninput="svPropertyAutocomplete(this.value)" onblur="setTimeout(checkDuplicateSV,300)">
-          <div id="svPropertyAcList" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #ccc;border-radius:0 0 6px 6px;box-shadow:0 6px 18px rgba(0,0,0,.12);z-index:999;max-height:150px;overflow-y:auto;font-size:12px;"></div>
-          @endif
-        </td>
-        <td class="lbl">Company / Developer:</td>
-        <td><input type="text" id="sv_company" placeholder="Developer or company name (optional)"></td>
-      </tr>
-    </table>
-
-    <!-- Note -->
-    <div class="frm-note">
-      <strong>Note:</strong> Please double check the client and property details before submitting.
-      A client who already has an active or completed site visit for the same property within the last 30 days will be flagged as a duplicate.
-    </div>
-
-    <div id="svDupWarning" class="frm-alert frm-alert-warn"></div>
-    <div id="svBanner" class="frm-alert"></div>
-
-    <!-- Certification -->
-    <hr style="border:none;border-top:1.5px solid #000;margin:10px 0 8px 0;">
-    <p style="font-size:11px;font-weight:700;margin:6px 0 8px 0;padding:0;line-height:1.4;">This is to certify that the above information is true and accurate, and that this site visit has been coordinated with the client named above.</p>
-
-    <!-- Signatures -->
-    <table class="sigs">
-      <tr>
-        <td style="padding:4px 8px;font-size:11px;font-weight:400;">Agent Signature over Printed Name:</td>
-        <td style="padding:4px 8px;font-size:11px;font-weight:400;">Client Signature over Printed Name:</td>
-        <td style="padding:4px 8px;font-size:11px;font-weight:400;">Noted by (Sales Admin):</td>
-      </tr>
-      <tr>
-        <td style="padding:4px 8px;height:50px;vertical-align:bottom;font-size:11px;"></td>
-        <td style="padding:4px 8px;height:50px;vertical-align:bottom;font-size:11px;"></td>
-        <td style="padding:4px 8px;height:50px;vertical-align:bottom;font-size:11px;"></td>
-      </tr>
-      <tr>
-        <td style="padding:4px 8px;font-size:11px;">Date: _______________</td>
-        <td style="padding:4px 8px;font-size:11px;">Date: _______________</td>
-        <td style="padding:4px 8px;font-size:11px;">Date: _______________</td>
-      </tr>
-    </table>
-
-    <!-- Buttons (screen only) -->
-    <div class="frm-btns dept-sel">
-      <button class="btn-clear-f" type="button" onclick="clearSVForm()">Clear</button>
-      <button class="btn-submit-f" type="button" id="svSubmitBtn" onclick="submitSiteVisit()">Submit Site Visit</button>
-      <button class="btn-print-f" type="button" onclick="openPreview('frmCardSV','Site Visit Form')">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:18px;height:18px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-        Print Site Visit Form
-      </button>
-    </div>
-
-  </div>
-  </div>{{-- #frmCardSVWrap --}}
-  </div>{{-- #tab-sitevisit --}}
-
-  {{-- ============================= --}}
-  {{-- Shared Preview / Print Modal  --}}
-  {{-- ============================= --}}
-  <div id="frmPreviewModal" class="frm-preview-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:flex-start;justify-content:center;overflow-y:auto;padding:32px 16px;">
-    <div style="background:white;border-radius:16px;width:100%;max-width:820px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;">
-      {{-- Modal Header --}}
-      <div class="modal-bar" style="background:linear-gradient(135deg,#1e4575,#2563eb);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;">
-        <div style="color:white;font-weight:700;font-size:16px;" id="frmPreviewLabel">Preview</div>
-        <div style="display:flex;gap:10px;align-items:center;">
-          <button onclick="previewDownload()" id="frmDownloadBtn" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:15px;height:15px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            Download PDF
-          </button>
-          <button onclick="previewPrint()" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:16px;height:16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-            Print
-          </button>
-          <button onclick="closePreview()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;">&times;</button>
-        </div>
-      </div>
-      {{-- Modal Body: cloned form --}}
-      <div class="modal-body-pad" style="padding:20px;display:flex;justify-content:center;"><div id="frmPreviewBody" style="background:white;box-shadow:0 4px 24px rgba(0,0,0,.3);width:100%;max-width:816px;"></div></div>
+    {{-- Modal Body: cloned form, scrolls internally, header stays put --}}
+    <div style="flex:1;overflow-y:auto;padding:20px;display:flex;justify-content:center;">
+      <div id="frmPreviewBody" style="background:white;box-shadow:0 4px 24px rgba(0,0,0,.15);width:816px;max-width:100%;flex-shrink:0;"></div>
     </div>
   </div>
 
+<style>
+@media (max-width: 900px) {
+  #frmPreviewModal > div { max-width:96vw; }
+  #frmPreviewBody { transform:scale(0.9); transform-origin:top center; }
+}
+@media (max-width: 700px) {
+  #frmPreviewBody { transform:scale(0.7); transform-origin:top center; }
+}
+@media (max-width: 480px) {
+  #frmPreviewBody { transform:scale(0.5); transform-origin:top center; }
+}
+</style>
 <script>
 /* ============================================================
    MOBILE AUTO-SCALE
@@ -512,6 +354,25 @@ function clearForm(){
   ['f_name','f_date_req','f_target','f_amount','f_remarks','f_cat'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('f_dept').value='HUMAN RESOURCES';
   updDept();
+}
+function openPreview(){
+  var clone=document.getElementById('frmCard').cloneNode(true);
+  // Remove buttons and dept selector from clone
+  clone.querySelectorAll('.frm-btns,.dept-sel').forEach(function(el){el.remove();});
+  document.getElementById('frmPreviewBody').innerHTML='';
+  document.getElementById('frmPreviewBody').appendChild(clone);
+  var modal=document.getElementById('frmPreviewModal');
+  // Move modal to be a direct child of <body> so no parent wrapper
+  // (sidebar layout, scroll containers, etc.) can ever clip or offset it.
+  if (modal.parentElement !== document.body) {
+    document.body.appendChild(modal);
+  }
+  modal.style.display='flex';
+  document.body.style.overflow='hidden'; // lock background from scrolling behind the modal
+}
+function closePreview(){
+  document.getElementById('frmPreviewModal').style.display='none';
+  document.body.style.overflow=''; // restore background scrolling
 }
 // Load control number on page load
 var _ctrlNum = '';
